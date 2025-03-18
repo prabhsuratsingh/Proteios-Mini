@@ -1,3 +1,4 @@
+import cpdb
 import json
 import os
 import re
@@ -9,6 +10,7 @@ from google.oauth2 import service_account
 from urllib.parse import quote
 import py3Dmol
 from Bio.PDB import PDBParser
+from Bio import PDB
 import matplotlib.pyplot as plt
 from graphein.protein.analysis import plot_residue_composition
 from graphein.protein.graphs import construct_graph
@@ -314,6 +316,7 @@ def generate_protein_structure(sequence, protein_id):
     
 #can be used, but needs pdb file 
 def generate_visual_graphein(pdb_file):
+    print("file : ", pdb_file)
     config = ProteinGraphConfig(
      edge_construction_functions=[       
          add_hydrophobic_interactions,
@@ -324,6 +327,17 @@ def generate_visual_graphein(pdb_file):
      #graph_metadata_functions=[asa, rsa],  # Add ASA and RSA features.
      #dssp_config=DSSPConfig(),             # Add DSSP config in order to compute ASA and RSA.
     )  
-    g = construct_graph(path=pdb_file, config=config)
-
+    print("after file")
+    g = construct_graph(path="protein_graphs\protein.pdb", config=config)
+    print("after graph")
     return g
+
+
+def validate_pdb():
+    parser = PDB.PDBParser(QUIET=True)
+    try:
+        structure = parser.get_structure("protein", "protein_graphs\protein.pdb")
+        print("✅ PDB file is valid and successfully parsed.")
+    except Exception as e:
+        st.error(f"PDB parsing error: {e}")
+        print(f"❌ Error parsing PDB file: {e}")

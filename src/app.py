@@ -1,6 +1,14 @@
+import os
 import streamlit as st
+import tempfile
+from graphein.protein.visualisation import plotly_protein_structure_graph
 
-from logic import analyze_protein_with_gemini, display_protein_structure, generate_protein_structure, query_proteins
+from logic import analyze_protein_with_gemini, display_protein_structure, generate_protein_structure, generate_visual_graphein, query_proteins, validate_pdb
+
+GRAPH_DIR = "protein_graphs"
+PDB_FILE = os.path.join(GRAPH_DIR, "protein.pdb")
+
+os.makedirs(GRAPH_DIR, exist_ok=True)
 
 st.set_page_config(
     page_title="Protein Analysis App",
@@ -139,6 +147,14 @@ if st.session_state['results'] is not None:
                                 st.error("⚠️ No PDB structure found for this protein.")
                     
                     if st.session_state.get('pdb_data'):
+                        prot_data = st.session_state['pdb_data']
+                       
+                        # with open(PDB_FILE, 'w') as temp_file:
+                        #     temp_file.write(prot_data)
+                        # validate_pdb()
+                        # g = generate_visual_graphein(PDB_FILE)
+                        # fig = plotly_protein_structure_graph(g, node_size_multiplier=1)
+                        # st.plotly_chart(fig)
                         structure_html = display_protein_structure(st.session_state['pdb_data'])
                         st.components.v1.html(structure_html._make_html(), height=500)
                         
