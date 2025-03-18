@@ -1,9 +1,8 @@
 import os
 import streamlit as st
-import tempfile
-from graphein.protein.visualisation import plotly_protein_structure_graph
+from rdkit import Chem
 
-from logic import analyze_protein_with_gemini, display_protein_structure, generate_protein_structure, generate_visual_graphein, query_proteins, validate_pdb
+from logic import analyze_protein_with_gemini, display_protein_structure, generate_molecules, generate_protein_structure, generate_visual_graphein, query_proteins, validate_pdb
 
 GRAPH_DIR = "protein_graphs"
 PDB_FILE = os.path.join(GRAPH_DIR, "protein.pdb")
@@ -11,9 +10,8 @@ PDB_FILE = os.path.join(GRAPH_DIR, "protein.pdb")
 os.makedirs(GRAPH_DIR, exist_ok=True)
 
 st.set_page_config(
-    page_title="Protein Analysis App",
+    page_title="Protein Analysis",
     page_icon="🧬",
-    layout="wide"
 )
 
 if 'results' not in st.session_state:

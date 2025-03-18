@@ -2,6 +2,7 @@ import cpdb
 import json
 import os
 import re
+import numpy as np
 import pandas as pd
 import requests
 import streamlit as st
@@ -9,21 +10,15 @@ from google import genai
 from google.oauth2 import service_account
 from urllib.parse import quote
 import py3Dmol
-from Bio.PDB import PDBParser
 from Bio import PDB
-import matplotlib.pyplot as plt
-from graphein.protein.analysis import plot_residue_composition
 from graphein.protein.graphs import construct_graph
-from graphein.protein.config import ProteinGraphConfig, DSSPConfig
+from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.edges.distance import (
     add_aromatic_interactions,
     add_disulfide_interactions,
     add_hydrophobic_interactions,
     add_peptide_bonds,
 )
-from graphein.protein.visualisation import plotly_protein_structure_graph
-from graphein.protein.analysis import plot_edge_type_distribution
-from graphein.protein.analysis import plot_degree_by_residue_type
 
 api_key = os.getenv("GEMINI_API_KEY")
 project = os.getenv("PROJECT_ID")
