@@ -6,13 +6,19 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "bio>=1.7.1",
+    "cpdb-protein>=0.2.0",
+    "cython>=3.0.12",
     "db-dtypes>=1.4.2",
     "dotenv>=0.9.9",
+    "deepchem>=2.8.0",
     "google-cloud-bigquery>=3.29.0",
     "google-genai>=1.2.0",
     "graphein>=1.7.7",
     "matplotlib>=3.10.1",
+    "networkx>=3.4.2",
     "py3dmol>=2.4.2",
     "python-dotenv>=1.0.1",
+    "rdkit>=2024.9.6",
     "streamlit>=1.42.0",
+    "torch>=2.6.0",
 ]

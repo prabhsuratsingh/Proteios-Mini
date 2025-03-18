@@ -4,4 +4,4 @@ req:
 
 .PHONY: run-app
 run:
-	@streamlit run src/app.py
+	@streamlit run src/Hello.py
