@@ -18,12 +18,21 @@ from graphein.protein.edges.distance import (
     add_hydrophobic_interactions,
     add_peptide_bonds,
 )
+from graphein.protein.visualisation import plotly_protein_structure_graph
+from graphein.protein.analysis import plot_edge_type_distribution
+from graphein.protein.analysis import plot_degree_by_residue_type
+from dotenv import load_dotenv
+load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 project = os.getenv("PROJECT_ID")
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'service-cred.json'
 creds = service_account.Credentials.from_service_account_file("service-cred.json")
+
+print("Api key", api_key)
+print('project', project)
+print('creds', creds)
 
 ai_client = genai.Client(api_key=api_key)
 

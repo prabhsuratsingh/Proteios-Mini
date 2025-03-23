@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -485,6 +486,17 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4b/71/33faf2bda374c202eab1be46b9c200685b283b5ea0f19e886766f598f770/deepdiff-8.4.1.tar.gz", hash = "sha256:b863d2552909160eccfeae2c9882bf1f75c69888499a04ca1597c706d12fe87f", size = 514141 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f2/ee/f6582d9a9be852cb4635b8b95ab3af2c013ddf0af438642d35897006af33/deepdiff-8.4.1-py3-none-any.whl", hash = "sha256:c853011336f3b6bc0f48f1ef564656f84a2cd78fbc8ee5da2033a3e017f52e79", size = 87125 },
+]
+
+[[package]]
+name = "dotenv"
+version = "0.9.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dotenv" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/b7/545d2c10c1fc15e48653c91efde329a790f2eecfbbf2bd16003b5db2bab0/dotenv-0.9.9-py2.py3-none-any.whl", hash = "sha256:29cf74a087b31dafdb5a446b6d7e11cbce8ed2741540e2339c69fbef92c94ce9", size = 1892 },
 ]
 
 [[package]]
@@ -1890,6 +1902,7 @@ dependencies = [
     { name = "cython" },
     { name = "db-dtypes" },
     { name = "deepchem" },
+    { name = "dotenv" },
     { name = "google-cloud-bigquery" },
     { name = "google-genai" },
     { name = "graphein" },
@@ -1909,7 +1922,6 @@ requires-dist = [
     { name = "cpdb-protein", specifier = ">=0.2.0" },
     { name = "cython", specifier = ">=3.0.12" },
     { name = "db-dtypes", specifier = ">=1.4.2" },
-    { name = "deepchem", specifier = ">=2.8.0" },
     { name = "google-cloud-bigquery", specifier = ">=3.29.0" },
     { name = "google-genai", specifier = ">=1.2.0" },
     { name = "graphein", specifier = ">=1.7.7" },

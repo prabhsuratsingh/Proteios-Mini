@@ -13,3 +13,5 @@ service-cred.json
 #Others
 .env
 .envrc
+
+myenv/
