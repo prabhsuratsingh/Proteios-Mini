@@ -2,7 +2,7 @@ import os
 import streamlit as st
 from rdkit import Chem
 
-from logic import analyze_protein_with_gemini, display_protein_structure, generate_protein_structure, generate_visual_graphein, query_proteins, validate_pdb
+from logic.protein_analysis_logic import analyze_protein_with_gemini, display_protein_structure, generate_protein_structure, generate_visual_graphein, query_proteins, validate_pdb
 
 GRAPH_DIR = "protein_graphs"
 PDB_FILE = os.path.join(GRAPH_DIR, "protein.pdb")

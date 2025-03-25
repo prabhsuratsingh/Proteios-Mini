@@ -7,7 +7,6 @@ from rdkit import Chem
 from rdkit.Chem import Draw, AllChem, Descriptors, Lipinski
 from google import genai 
 from google.oauth2 import service_account
-import torch
 
 api_key = os.getenv("GEMINI_API_KEY")
 project = os.getenv("PROJECT_ID")
@@ -45,7 +44,6 @@ def get_real_compound_libraries():
     
     # Fetch FDA-approved drugs from DrugBank API
     def get_drugbank_compounds():
-        # DrugBank requires authentication
         auth_header = {
             "Authorization": f"Bearer {os.environ.get('DRUGBANK_API_KEY')}"
         }
@@ -147,7 +145,6 @@ def get_real_compound_libraries():
     print("libraries : ", libraries)
     return libraries
     
-    # If all APIs failed, provide some default compounds
     # if all(len(compounds) == 0 for compounds in libraries.values()):
     #     libraries["Default compounds"] = [
     #         "CC(=O)NC1=CC=C(C=C1)O",
@@ -190,10 +187,6 @@ def get_alphafold_structure(uniprot_id):
 
 def calculate_druggability(protein_info, structure):
     """Calculate druggability score for the protein"""
-    # This is a simplified mock implementation
-    # Real implementation would analyze pocket size, hydrophobicity, etc.
-    
-    # Mock scoring based on protein features
     score = 0
     
     # Check if the protein has known disease associations

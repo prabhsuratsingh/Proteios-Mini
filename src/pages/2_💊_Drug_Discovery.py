@@ -9,7 +9,7 @@ from rdkit.Chem import Draw, AllChem, Descriptors, Lipinski
 import py3Dmol
 import time
 
-from drug_discovery_logic import analyze_protein_disease_associations, calculate_druggability, generate_novel_compounds, get_alphafold_structure, get_compound_libraries, get_protein_info, get_real_compound_libraries, query_uniprot, screen_compounds, showmol
+from logic.drug_discovery_logic import analyze_protein_disease_associations, calculate_druggability, generate_novel_compounds, get_alphafold_structure, get_compound_libraries, get_protein_info, get_real_compound_libraries, query_uniprot, screen_compounds, showmol
 
 
 st.set_page_config(
@@ -23,17 +23,17 @@ st.title("Drug Discovery")
 with st.sidebar:
     st.header("About")
     st.info("""
-    This app allows you to search for proteins using natural language queries,
-    visualize their 3D structures, and analyze their properties.
+    This app allows you to discover drugs for a proteins related to a given disease or condition. It analyzes the protein
+    and determines its druggability score. For that particular protein, it performs screening and De-Novo design to generate drugs.
     
     Data sources: UniProt, Pfam
     """)
     
     st.header("Examples")
     st.markdown("""
-    - Show proteins related to plastic degradation
-    - Search for hydrolase enzymes
-    - Find the proteins that cause Alzheimer's 
+    - Proteins related nerve degradation
+    - Huntingtons causing proteins
+    - Proteins that cause Alzheimer's 
     """)
 
 # Create tabs

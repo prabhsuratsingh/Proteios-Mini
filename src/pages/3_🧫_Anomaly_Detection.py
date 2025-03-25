@@ -1,5 +1,5 @@
 import streamlit as st
-from anomaly_detection import *
+from logic.anomaly_detection import *
 
 st.set_page_config(
     page_title="Anomaly Detection",
