@@ -4,9 +4,11 @@ import numpy as np
 import requests
 import os
 from rdkit import Chem
-from rdkit.Chem import Draw, AllChem, Descriptors, Lipinski
+from rdkit.Chem import Descriptors
 from google import genai 
 from google.oauth2 import service_account
+from sympy import false
+
 
 api_key = os.getenv("GEMINI_API_KEY")
 project = os.getenv("PROJECT_ID")
@@ -16,7 +18,20 @@ creds = service_account.Credentials.from_service_account_file("service-cred.json
 
 ai_client = genai.Client(api_key=api_key)
 
-# Mock packages for demonstration (replace with actual implementations)
+# #loadin model from cloud
+# url = "https://s3.tebi.io/proteios-models/molecular_vae.pth"
+# model_path = "molecular_vae.pth"
+# if not os.path.exists(model_path):
+#     response = requests.get(url)
+#     with open(model_path, "wb") as f:
+#         f.write(response.content)
+
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# vae_model = MolecularVAE()
+# vae_model.load_state_dict(torch.load(model_path, map_location=device))
+# vae_model.to(device)
+
 class MockMolecularDocking:
     def dock(self, receptor_file, ligand_file):
         # Simulate docking score
@@ -24,7 +39,6 @@ class MockMolecularDocking:
 
 class MockMoleculeGenerator:
     def generate(self, target_protein, n=5):
-        # Mock molecule generation
         smiles_list = [
             "CC(=O)NC1=CC=C(C=C1)O",
             "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O",
@@ -34,7 +48,6 @@ class MockMoleculeGenerator:
         ]
         return smiles_list
 
-# Initialize mock objects
 molecular_docking = MockMolecularDocking()
 molecule_generator = MockMoleculeGenerator()
 
@@ -42,7 +55,6 @@ molecule_generator = MockMoleculeGenerator()
 def get_real_compound_libraries():
     libraries = {}
     
-    # Fetch FDA-approved drugs from DrugBank API
     def get_drugbank_compounds():
         auth_header = {
             "Authorization": f"Bearer {os.environ.get('DRUGBANK_API_KEY')}"
@@ -62,7 +74,6 @@ def get_real_compound_libraries():
             "CC(C)C1=C(C(=CC=C1)C(C)C)O",  # Thymol
         ]
     
-    # Fetch compounds from ChEMBL API
     def get_chembl_compounds(query_type):
         base_url = "https://www.ebi.ac.uk/chembl/api/data"
         
@@ -87,26 +98,21 @@ def get_real_compound_libraries():
             for molecule in results["molecules"]:
                 if "molecule_structures" in molecule and "canonical_smiles" in molecule["molecule_structures"]:
                     compounds.append(molecule["molecule_structures"]["canonical_smiles"])
-            # print("Chembl:", compounds)
             return compounds
         return []
     
-    # Fetch natural products from PubChem
     def get_pubchem_compounds(query):
-        # First search for compounds matching query
         search_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{query}/cids/JSON?name_type=word"
         response = requests.get(search_url)
         
         if response.status_code == 200:
             data = response.json()
             if "IdentifierList" in data and "CID" in data["IdentifierList"]:
-                cids = data["IdentifierList"]["CID"][:100]  # Limit to 100 compounds
+                cids = data["IdentifierList"]["CID"][:100]
                 
-                # Then get SMILES for these compounds
                 cids_str = ",".join(map(str, cids))
                 props_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cids_str}/property/CanonicalSMILES/JSON"
                 props_response = requests.get(props_url)
-                # print("pubchem : ", props_response)
                 
                 if props_response.status_code == 200:
                     props_data = props_response.json()
@@ -114,7 +120,6 @@ def get_real_compound_libraries():
                         return [prop["CanonicalSMILES"] for prop in props_data["PropertyTable"]["Properties"]]
         return []
     
-    # Try to populate the libraries from various sources
     try:
         libraries["FDA-approved drugs"] = get_drugbank_compounds()
     except Exception as e:
@@ -142,20 +147,8 @@ def get_real_compound_libraries():
         st.warning(f"Could not fetch PubChem natural products: {str(e)}")
         libraries["Natural products"] = []
 
-    print("libraries : ", libraries)
     return libraries
-    
-    # if all(len(compounds) == 0 for compounds in libraries.values()):
-    #     libraries["Default compounds"] = [
-    #         "CC(=O)NC1=CC=C(C=C1)O",
-    #         "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O",
-    #         "C1=CC=C2C(=C1)C=CC=C2OCCN3CCOCC3",
-    #         "CC1=C(C=C(C=C1)NC(=O)C2=CC=C(C=C2)CN3CCN(CC3)C)NC4=NC=CC(=N4)C5=CN=CC=C5",
-    #         "COC1=C(C=C2C(=C1)C(=NC(=N2)N3CCN(CC3)C)C4=CC=CC=C4)OCCCN5CCOCC5"
-    #     ]
 
-
-# Helper functions
 def query_uniprot(query_term):
     """Query UniProt API for proteins based on search term"""
     base_url = "https://rest.uniprot.org/uniprotkb/search"

@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from io import BytesIO
 import matplotlib.pyplot as plt
 import seaborn as sns
 from rdkit import Chem
-from rdkit.Chem import Draw, AllChem, Descriptors, Lipinski
-import py3Dmol
+from rdkit.Chem import Draw, Descriptors, Lipinski
 import time
 
 from logic.drug_discovery_logic import analyze_protein_disease_associations, calculate_druggability, generate_novel_compounds, get_alphafold_structure, get_compound_libraries, get_protein_info, get_real_compound_libraries, query_uniprot, screen_compounds, showmol
@@ -36,10 +34,8 @@ with st.sidebar:
     - Proteins that cause Alzheimer's 
     """)
 
-# Create tabs
 tab1, tab2, tab3, tab4 = st.tabs(["Target Identification", "Target Analysis", "Virtual Screening", "De Novo Design"])
 
-# Target Identification Tab
 with tab1:
     st.header("Target Identification")
     st.write("Search for proteins related to a specific disease or condition")
@@ -54,7 +50,6 @@ with tab1:
                 if results and "results" in results:
                     st.session_state.uniprot_results = results["results"]
                     
-                    # Create a dataframe for display
                     proteins_data = []
                     for protein in results["results"]:
                         protein_id = protein.get("primaryAccession", "N/A")
@@ -79,37 +74,30 @@ with tab1:
         else:
             st.warning("Please enter a search query")
 
-# Target Analysis Tab
 with tab2:
     st.header("Target Analysis")
     st.write("Analyze potential drug targets in detail")
     
     if "proteins_df" in st.session_state and "uniprot_results" in st.session_state:
-        # Create a selection box for protein
         protein_options = st.session_state.proteins_df["UniProt ID"].tolist()
         selected_protein = st.selectbox("Select a protein to analyze", protein_options)
         
         if st.button("Analyze Selected Protein"):
             with st.spinner("Analyzing protein..."):
-                # Get detailed protein info
                 protein_info = get_protein_info(selected_protein)
                 
                 if protein_info:
-                    # Get AlphaFold structure
                     structure_data = get_alphafold_structure(selected_protein)
                     
                     if structure_data:
-                        # Save structure data for other tabs
                         st.session_state.current_protein = {
                             "id": selected_protein,
                             "info": protein_info,
                             "structure": structure_data
                         }
                         
-                        # Calculate druggability score
                         druggability_score = calculate_druggability(protein_info, structure_data)
                         
-                        # Display protein info
                         col1, col2 = st.columns([1, 1])
                         
                         with col1:
@@ -150,20 +138,10 @@ with tab2:
                         
                         with col2:
                             st.subheader("Protein Structure (AlphaFold)")
-                            
-                            # Create a 3D viewer for the protein
-                            # structure_viewer = py3Dmol.view(width=400, height=400)
-                            # structure_viewer.addModel(structure_data.decode('utf-8'), 'pdb')
-                            # structure_viewer.setStyle({'cartoon': {'color': 'spectrum'}})
-                            # structure_viewer.zoomTo()
-                            # structure_viewer.spin(True)
-                            # showmol(structure_viewer, height=400, width=400)
                             mol_html = showmol(structure_data)
                             st.components.v1.html(mol_html, height=500)
                         
-                        # Show disease associations
                         st.subheader("Disease Associations & Drug Target Analysis")
-                        
                         
                         analysis = analyze_protein_disease_associations(protein_info)
                         st.markdown(analysis)
@@ -175,7 +153,6 @@ with tab2:
     else:
         st.info("Please search for proteins in the Target Identification tab first")
 
-# Virtual Screening Tab
 with tab3:
     st.header("Virtual Screening")
     st.write("Screen compound libraries against selected protein target")
@@ -242,7 +219,6 @@ with tab3:
     else:
         st.info("Please select and analyze a protein target first")
 
-# De Novo Design Tab
 with tab4:
     st.header("De Novo Drug Design")
     st.write("Generate novel compounds for the selected target")
@@ -281,7 +257,7 @@ with tab4:
                 
                 # Convert SMILES to molecules
                 mols = [Chem.MolFromSmiles(smiles) for smiles in st.session_state.generated_compounds]
-                
+
                 # Display molecules in a grid
                 img = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(200, 200), legends=[f"Compound {i+1}" for i in range(len(mols))])
                 

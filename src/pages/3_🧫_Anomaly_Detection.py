@@ -25,7 +25,9 @@ with tab1:
                 sequence = fetch_uniprot_data(uniprot_id)
                 if sequence:
                     st.success(f"Retrieved sequence of length {len(sequence)}")
-                    st.code(sequence if len(sequence) <= 100 else sequence[:100] + "...")
+                    # st.code(sequence if len(sequence) <= 100 else sequence[:100] + "...")
+                    st.code(sequence)
+                    print('sequence ' ,sequence)
                 else:
                     st.error("Failed to retrieve sequence")
     else:
