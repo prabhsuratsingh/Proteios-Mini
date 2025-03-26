@@ -22,4 +22,5 @@ dependencies = [
     "streamlit>=1.42.0",
     "torch>=2.6.0",
     "tensorflow>=2.13.0",
+    "biotite>=1.2.0",
 ]

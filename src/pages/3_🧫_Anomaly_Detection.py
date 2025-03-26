@@ -1,5 +1,6 @@
 import streamlit as st
 from logic.anomaly_detection import *
+from models.AnomalyDetection.model import ProteinAnomalyDetector
 
 st.set_page_config(
     page_title="Anomaly Detection",
@@ -8,13 +9,17 @@ st.set_page_config(
 
 st.title("Anomaly Detection")
 
+if 'sequence' not in st.session_state:
+    st.session_state['sequence'] = None
+if 'protein_id' not in st.session_state:
+    st.session_state['protein_id'] = None
+
 # Create tabs
 tab1, tab2, tab3 = st.tabs(["Sequence Analysis", "Structure Analysis", "ML Anomaly Detection"])
 
 with tab1:
     st.header("Sequence-based Anomaly Detection")
     
-    # Input options
     input_method = st.radio("Select input method:", ["UniProt ID", "Paste sequence"])
     
     sequence = None
@@ -23,42 +28,36 @@ with tab1:
         if st.button("Fetch Sequence"):
             with st.spinner("Fetching sequence..."):
                 sequence = fetch_uniprot_data(uniprot_id)
+                st.session_state['protein_id'] = uniprot_id
                 if sequence:
                     st.success(f"Retrieved sequence of length {len(sequence)}")
-                    # st.code(sequence if len(sequence) <= 100 else sequence[:100] + "...")
+                    st.session_state['sequence'] = sequence
                     st.code(sequence)
-                    print('sequence ' ,sequence)
                 else:
                     st.error("Failed to retrieve sequence")
     else:
         sequence = st.text_area("Enter protein sequence:", "MALWMRLLPLLALLALWGPDPAAAFVNQHLCGSHLVEALYLVCGERGFFYTPKTRREAEDLQVGQVELGGGPGAGSLQPLALEGSLQKRGIVEQCCTSICSLYQLENYCN")
+        st.session_state['sequence'] = sequence
     
-    if sequence:
-        # Run anomaly detection
-        detector = ProteinAnomalyDetector()
-        
+    if st.session_state["sequence"]:
         if st.button("Detect Anomalies"):
             with st.spinner("Analyzing sequence..."):
-                results = detector.detect_sequence_anomalies(sequence)
-                
-                # Display results
-                if 'error' in results:
-                    st.error(results['error'])
+                results = detect_anomaly_AE_model(
+                    st.session_state['sequence'],
+                    st.session_state['protein_id']
+                )
+
+            if results["is_anomalous"].loc[results.index[0]]:
+                st.subheader("Anomaly Detected!")
+                target = None
+                if st.session_state['protein_id']:
+                    target = st.session_state['protein_id']
                 else:
-                    anomalies = results['anomalies']
-                    
-                    if anomalies:
-                        st.subheader(f"Found {len(anomalies)} anomalies")
-                        
-                        # Create a table of anomalies
-                        anomaly_df = pd.DataFrame(anomalies)
-                        st.dataframe(anomaly_df)
-                        
-                        # Visualize anomalies
-                        fig = detector.visualize_anomalies(sequence, anomalies)
-                        st.plotly_chart(fig)
-                    else:
-                        st.info("No anomalies detected in the sequence")
+                    target = st.session_state['sequence']
+                st.text(f"Target Protein : {target}")
+                st.text(f"Anomaly Score : {results['anomaly_score'].loc[results.index[0]]}")
+            else:
+                st.subheader("No Anomaly Detected!")
 
 with tab2:
     st.header("Structure-based Anomaly Detection")
@@ -75,26 +74,79 @@ with tab2:
             f.write(pdb_content)
         
         # Parse the PDB file
-        detector = ProteinAnomalyDetector()
+        detector = ProteinAnomalyDetectorPDB()
         parser = PDBParser(QUIET=True)
         structure = parser.get_structure("protein", "temp.pdb")
         
-        # Run anomaly detection
         if st.button("Detect Structural Anomalies"):
             with st.spinner("Analyzing structure..."):
                 results = detector.detect_structure_anomalies(structure)
                 
-                # Display results
                 anomalies = results['anomalies']
+                structure_features = results['feature_vector']
+                
+
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Total Anomalies", len(anomalies))
+                with col2:
+                    st.metric("Total Atoms", structure_features.get('atom_count', 'N/A'))
+                with col3:
+                    st.metric("Total Residues", structure_features.get('residue_count', 'N/A'))
                 
                 if anomalies:
-                    st.subheader(f"Found {len(anomalies)} structural anomalies")
-                    
-                    # Create a table of anomalies
                     anomaly_df = pd.DataFrame(anomalies)
-                    st.dataframe(anomaly_df)
+                    
+                    st.subheader("Anomaly Severity Distribution")
+                    severity_counts = anomaly_df['severity'].value_counts()
+                    fig_severity = px.pie(
+                        names=severity_counts.index, 
+                        values=severity_counts.values,
+                        title="Anomaly Severity Distribution",
+                        color_discrete_map={
+                            'high': 'red', 
+                            'medium': 'orange', 
+                            'low': 'yellow'
+                        }
+                    )
+                    st.plotly_chart(fig_severity)
+                    
+                    st.subheader("Detailed Anomaly Findings")
+                    
+                    with st.expander("View Detailed Anomalies"):
+                        display_df = anomaly_df.copy()
+                        
+                        display_df['description'] = display_df.apply(lambda row: format_anomaly_description(row), axis=1)
+                        
+                        display_columns = ['type', 'severity', 'description']
+                        st.dataframe(display_df[display_columns], use_container_width=True)
+                    
+                    st.subheader("Structural Metrics")
+                    
+                    # Create bar chart of key structural features
+                    structural_metrics = {
+                        'Atom Count': structure_features.get('atom_count', 0),
+                        'Residue Count': structure_features.get('residue_count', 0),
+                        'CA Distance Mean': structure_features.get('ca_distance_mean', 0),
+                        'CA Distance Std': structure_features.get('ca_distance_std', 0),
+                        'CA Max Distance': structure_features.get('ca_distance_max', 0)
+                    }
+                    
+                    fig_metrics = go.Figure(data=[
+                        go.Bar(
+                            x=list(structural_metrics.keys()), 
+                            y=list(structural_metrics.values()),
+                            marker_color=['blue', 'green', 'red', 'purple', 'orange']
+                        )
+                    ])
+                    fig_metrics.update_layout(
+                        title='Key Structural Metrics',
+                        xaxis_title='Metric',
+                        yaxis_title='Value'
+                    )
+                    st.plotly_chart(fig_metrics)
                 else:
-                    st.info("No structural anomalies detected")
+                    st.success("No significant anomalies detected in the protein structure.")
 
 with tab3:
     st.header("Machine Learning Anomaly Detection")

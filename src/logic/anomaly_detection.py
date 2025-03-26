@@ -14,7 +14,9 @@ import io
 import plotly.graph_objects as go
 import plotly.express as px
 
-class ProteinAnomalyDetector:
+from models.AnomalyDetection.utils import load_model_project, prepare_protein_data
+
+class ProteinAnomalyDetectorPDB:
     def __init__(self):
         self.parser = PDBParser(QUIET=True)
         self.aa_properties = {
@@ -48,7 +50,6 @@ class ProteinAnomalyDetector:
         
     def calculate_sequence_features(self, sequence):
         """Calculate various sequence-based features for anomaly detection"""
-        # Remove non-standard amino acids
         cleaned_seq = ''.join([aa for aa in sequence if aa in self.aa_properties])
         
         if not cleaned_seq:
@@ -135,146 +136,100 @@ class ProteinAnomalyDetector:
         
         return features
         
-    def detect_sequence_anomalies(self, sequence, reference_sequences=None):
-        """Detect anomalies in protein sequences"""
-        # Calculate features for the target sequence
-        target_features = self.calculate_sequence_features(sequence)
-        
-        if not target_features:
-            return {
-                'error': 'Could not calculate features for the sequence',
-                'anomalies': []
-            }
-        
-        anomalies = []
-        
-        # Method 1: Compare amino acid frequencies with reference
-        for aa, ref_freq in self.reference_frequencies.items():
-            observed_freq = sequence.count(aa) / len(sequence)
-            z_score = (observed_freq - ref_freq) / (np.sqrt(ref_freq * (1 - ref_freq) / len(sequence)))
-            
-            if abs(z_score) > 3:  # Threshold for statistical significance
-                anomalies.append({
-                    'type': 'amino_acid_frequency',
-                    'amino_acid': aa,
-                    'observed': observed_freq,
-                    'expected': ref_freq,
-                    'z_score': z_score,
-                    'severity': 'high' if abs(z_score) > 5 else 'medium'
-                })
-        
-        # Method 2: Check for unusual regions (sliding window approach)
-        window_size = 10
-        for i in range(len(sequence) - window_size + 1):
-            window = sequence[i:i+window_size]
-            
-            # Calculate hydrophobicity
-            hydrophobicity = sum(self.aa_properties.get(aa, {'hydrophobicity': 0})['hydrophobicity'] for aa in window) / window_size
-            
-            # Detect hydrophobic regions in unexpected places
-            if i < len(sequence) / 3:  # Signal peptide region
-                if hydrophobicity > 2:
-                    anomalies.append({
-                        'type': 'hydrophobic_region',
-                        'position': f"{i+1}-{i+window_size}",
-                        'hydrophobicity': hydrophobicity,
-                        'severity': 'medium'
-                    })
-            
-            # Check for unusual charge distribution
-            charge = sum(self.aa_properties.get(aa, {'charge': 0})['charge'] for aa in window)
-            if abs(charge) > 5:  # Very high charge concentration
-                anomalies.append({
-                    'type': 'charge_cluster',
-                    'position': f"{i+1}-{i+window_size}",
-                    'charge': charge,
-                    'severity': 'medium' if abs(charge) > 5 else 'low'
-                })
-        
-        # Method 3: Check for unusual amino acid patterns
-        patterns = {
-            'poly_proline': 'PPP',
-            'poly_glycine': 'GGG',
-            'poly_glutamine': 'QQQ',  # Associated with some diseases
-            'poly_alanine': 'AAA'
-        }
-        
-        for pattern_name, pattern in patterns.items():
-            positions = []
-            pos = 0
-            while True:
-                pos = sequence.find(pattern, pos)
-                if pos == -1:
-                    break
-                positions.append(pos + 1)  # 1-indexed positions
-                pos += 1
-            
-            if positions:
-                anomalies.append({
-                    'type': 'unusual_pattern',
-                    'pattern': pattern_name,
-                    'positions': positions,
-                    'severity': 'medium' if len(positions) > 1 else 'low'
-                })
-        
-        # Method 4: Check for rare amino acids
-        rare_aas = ['W', 'C', 'H', 'M']
-        for aa in rare_aas:
-            count = sequence.count(aa)
-            freq = count / len(sequence)
-            if freq > 2 * self.reference_frequencies[aa]:
-                anomalies.append({
-                    'type': 'high_rare_aa',
-                    'amino_acid': aa,
-                    'count': count,
-                    'frequency': freq,
-                    'expected': self.reference_frequencies[aa],
-                    'severity': 'low'
-                })
-
-        print(anomalies)
-        
-        return {
-            'feature_vector': target_features,
-            'anomalies': anomalies
-        }
     
-    def detect_structure_anomalies(self, pdb_structure):
-        """Detect anomalies in protein structures"""
-        # Calculate features for the structure
+    def detect_structure_anomalies(self, pdb_structure, reference_structures=None):
         structure_features = self.calculate_structure_features(pdb_structure)
         
         anomalies = []
         
-        # Check for unusual atom distances
+        if reference_structures:
+            ref_ca_distances = []
+            ref_atom_counts = []
+            ref_residue_counts = []
+            
+            for ref_structure in reference_structures:
+                ref_features = self.calculate_structure_features(ref_structure)
+                ref_ca_distances.append(ref_features.get('ca_distance_mean', 0))
+                ref_atom_counts.append(ref_features.get('atom_count', 0))
+                ref_residue_counts.append(ref_features.get('residue_count', 0))
+            
+            import numpy as np
+            mean_ref_atoms = np.mean(ref_atom_counts)
+            std_ref_atoms = np.std(ref_atom_counts)
+            mean_ref_residues = np.mean(ref_residue_counts)
+            std_ref_residues = np.std(ref_residue_counts)
+            mean_ref_ca_distance = np.mean(ref_ca_distances)
+            std_ref_ca_distance = np.std(ref_ca_distances)
+        else:
+            mean_ref_atoms = structure_features['atom_count']
+            std_ref_atoms = mean_ref_atoms * 0.2
+            mean_ref_residues = structure_features['residue_count']
+            std_ref_residues = mean_ref_residues * 0.2
+            mean_ref_ca_distance = structure_features.get('ca_distance_mean', 0)
+            std_ref_ca_distance = mean_ref_ca_distance * 0.2
+        
+        z_score_atoms = (structure_features['atom_count'] - mean_ref_atoms) / std_ref_atoms if std_ref_atoms != 0 else 0
+        if abs(z_score_atoms) > 2:
+            anomalies.append({
+                'type': 'abnormal_atom_count',
+                'current_count': structure_features['atom_count'],
+                'reference_mean': mean_ref_atoms,
+                'z_score': z_score_atoms,
+                'severity': 'high' if abs(z_score_atoms) > 3 else 'medium'
+            })
+        
+        z_score_residues = (structure_features['residue_count'] - mean_ref_residues) / std_ref_residues if std_ref_residues != 0 else 0
+        if abs(z_score_residues) > 2:
+            anomalies.append({
+                'type': 'abnormal_residue_count',
+                'current_count': structure_features['residue_count'],
+                'reference_mean': mean_ref_residues,
+                'z_score': z_score_residues,
+                'severity': 'high' if abs(z_score_residues) > 3 else 'medium'
+            })
+        
         if 'ca_distance_mean' in structure_features:
-            if structure_features['ca_distance_max'] > 50:  # Unusually large distance
+            z_score_ca_distance = (structure_features['ca_distance_mean'] - mean_ref_ca_distance) / std_ref_ca_distance if std_ref_ca_distance != 0 else 0
+            
+            if abs(z_score_ca_distance) > 2:
                 anomalies.append({
-                    'type': 'unusual_extended_structure',
-                    'max_distance': structure_features['ca_distance_max'],
-                    'severity': 'medium'
+                    'type': 'unusual_ca_distance',
+                    'current_mean_distance': structure_features['ca_distance_mean'],
+                    'reference_mean_distance': mean_ref_ca_distance,
+                    'z_score': z_score_ca_distance,
+                    'severity': 'high' if abs(z_score_ca_distance) > 3 else 'medium'
                 })
-                
-            if structure_features['ca_distance_std'] > 15:  # High variability in distances
+            
+            if structure_features['ca_distance_max'] > mean_ref_ca_distance + 3 * std_ref_ca_distance:
                 anomalies.append({
-                    'type': 'unusual_structure_variability',
-                    'distance_std': structure_features['ca_distance_std'],
-                    'severity': 'medium'
+                    'type': 'extreme_max_ca_distance',
+                    'max_distance': structure_features['ca_distance_max'],
+                    'reference_mean': mean_ref_ca_distance,
+                    'severity': 'high'
                 })
         
-        # Check for unusually compact structures
-        if 'ca_distance_mean' in structure_features and structure_features['ca_distance_mean'] < 10:
+        backbone_atoms = ['N', 'CA', 'C', 'O']
+        backbone_present = {atom: 0 for atom in backbone_atoms}
+        
+        for atom in pdb_structure.get_atoms():
+            if atom.get_name() in backbone_atoms:
+                backbone_present[atom.get_name()] += 1
+        
+        missing_backbone_atoms = [atom for atom, count in backbone_present.items() if count == 0]
+        if missing_backbone_atoms:
             anomalies.append({
-                'type': 'unusual_compact_structure',
-                'mean_distance': structure_features['ca_distance_mean'],
-                'severity': 'medium'
+                'type': 'missing_backbone_atoms',
+                'missing_atoms': missing_backbone_atoms,
+                'severity': 'high'
             })
+        
+        print("Adaptive Anomalies:", anomalies)
         
         return {
             'feature_vector': structure_features,
             'anomalies': anomalies
         }
-    
+
     def run_ml_anomaly_detection(self, sequence, reference_sequences):
         """Use machine learning to detect anomalies"""
         # Collect features for all sequences
@@ -395,7 +350,6 @@ class ProteinAnomalyDetector:
     
 
 def fetch_uniprot_data(accession):
-    """Fetch protein data from UniProt"""
     url = f"https://rest.uniprot.org/uniprotkb/{accession}.fasta"
     response = requests.get(url)
     if response.status_code == 200:
@@ -407,7 +361,6 @@ def fetch_uniprot_data(accession):
     return None
 
 def fetch_reference_proteins(keyword, limit=20):
-    """Fetch reference proteins based on a keyword"""
     url = f"https://rest.uniprot.org/uniprotkb/search?query={keyword}&format=fasta&size={limit}"
     response = requests.get(url)
     if response.status_code == 200:
@@ -421,3 +374,34 @@ def fetch_reference_proteins(keyword, limit=20):
         
         return sequences
     return {}
+
+def detect_anomaly_AE_model(sequence, id):
+    model = load_model_project()
+    new_sequences, new_ids = [sequence],[id]
+    new_features = prepare_protein_data(new_sequences, feature_type="composition")
+    new_anomalies, new_scores = model.detect_anomalies(new_features, return_scores=True)
+    new_results = pd.DataFrame({
+        'protein_id': new_ids,
+        'anomaly_score': new_scores,
+        'is_anomalous': new_anomalies,
+        'seq': sequence
+    })
+    print("Analysis results for new proteins:")
+    print(new_results.sort_values('anomaly_score', ascending=False))
+    return new_results
+
+
+def format_anomaly_description(anomaly):
+    descriptions = {
+        'abnormal_atom_count': f"Unusual total atom count. Current count differs significantly from expected (Z-score: {anomaly.get('z_score', 'N/A')})",
+        'abnormal_residue_count': f"Unusual total residue count. Current count differs significantly from expected (Z-score: {anomaly.get('z_score', 'N/A')})",
+        'unusual_ca_distance': f"Atypical alpha-carbon distances. Mean distance deviates from expected (Z-score: {anomaly.get('z_score', 'N/A')})",
+        'extreme_max_ca_distance': f"Extremely large maximum alpha-carbon distance ({anomaly.get('max_distance', 'N/A')})",
+        'missing_backbone_atoms': f"Critical structural issue: Missing backbone atoms ({', '.join(anomaly.get('missing_atoms', []))})",
+        'missing_side_chain_atoms': f"Structural incompleteness: Missing side chain atoms ({', '.join(anomaly.get('missing_atoms', []))})",
+        'unusual_hydrogen_distribution': f"Atypical hydrogen atom distribution (Ratio: {anomaly.get('hydrogen_ratio', 'N/A')})",
+        'high_distance_variability': f"High variability in alpha-carbon distances (Std Dev: {anomaly.get('distance_std', 'N/A')})",
+        'unusual_hydrophobic_balance': f"Unusual hydrophobic to polar atom balance (Ratio: {anomaly.get('hydrophobic_ratio', 'N/A')})"
+    }
+    
+    return descriptions.get(anomaly['type'], f"Anomaly of type: {anomaly['type']}")

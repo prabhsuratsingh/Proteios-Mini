@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -200,6 +199,58 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ef/2f/2ef9115e317f4c2acb690b341f40de751b16d14169fdbb8d6eb86964166c/biothings_client-0.4.1.tar.gz", hash = "sha256:5b34e09c905280b5bd2538f1f34b6fc780c53c8da9b4074e3ff304836046f613", size = 56096 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/dc/6d/130477cfbd7294949b919c45cc1ed14a642cec95afba06a54400a4419235/biothings_client-0.4.1-py3-none-any.whl", hash = "sha256:9cbc17461b2bf6af6ed200929b886d6670d450af2034b428cd833f725695265a", size = 46698 },
+]
+
+[[package]]
+name = "biotite"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "biotraj" },
+    { name = "msgpack" },
+    { name = "networkx" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/24/95/ce1bbe59adb442390f57ffc4a4b93799ce9babd755e82db0b4a55fe87ca9/biotite-1.2.0.tar.gz", hash = "sha256:8b36dd708a976db10f629ffc8f81a236a74268a4e65e1f576610331d67dab392", size = 36062367 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5c/3f/31e9ca894f0d596cc9ef2333c6a089736b015b686c8921c9f07119b8534e/biotite-1.2.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:c887076ac43efa897dfb3c26a1c443b1227cf9aa6afc13517898785502d1d03a", size = 39460424 },
+    { url = "https://files.pythonhosted.org/packages/0d/8a/4521fcbb4f810bb52fa333b2b6fa61eea924897c66e4381e45b5ebaa29e3/biotite-1.2.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:f5d25017727956776fca7a90482a1123eb774f7197cd2ef0bdeb6ddcedc88cac", size = 39243143 },
+    { url = "https://files.pythonhosted.org/packages/78/e9/ac66b0714b86db808015a510616b89e1ceaf85012bfa2de5d7b787d22c18/biotite-1.2.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ec7334b4c224baea8d755bb62b40b27f3bafdeef38640288e7d15fd2d682df2a", size = 53790448 },
+    { url = "https://files.pythonhosted.org/packages/da/66/945c755cd530505b313e854f647f52c8e4e499980eb728fc8b2adc56c1f0/biotite-1.2.0-cp311-cp311-win_amd64.whl", hash = "sha256:ef3d54e9641e09fb0fbc614b84835bb1f254dfcf08bc38d9de89d2ba3a310434", size = 39169552 },
+    { url = "https://files.pythonhosted.org/packages/2f/9a/b8e38a6c8545b31af499f84cc6af127c95f9c6c75353a6a6a5540da4b795/biotite-1.2.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:7bb7d009ece6bf8910b2ac98124fc83cd138bbe6ca3c62225ad11346b296634f", size = 39427083 },
+    { url = "https://files.pythonhosted.org/packages/ce/d7/b4bc26fe3d96a48558f37247d12aa680edf60f3e1b49f691932698c66c27/biotite-1.2.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4a0598abd10fbed969131bdc5e22f6364ea7056e14858fc0e733d2df4996781b", size = 39193034 },
+    { url = "https://files.pythonhosted.org/packages/3e/04/3f09ba937cdd5381743ffabd48c18d790a684a11fb6b23dfd8d30f0ec858/biotite-1.2.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:04ad53760c235034223c21a19791b74a9f8f70c6a3ac78f6e199f3c5c1ad98d1", size = 55595054 },
+    { url = "https://files.pythonhosted.org/packages/2c/9e/7455a08d4777003489c035bea1931c7f4b5fbdd0817d8eca844693452ac3/biotite-1.2.0-cp312-cp312-win_amd64.whl", hash = "sha256:580121d78c50618390e8a4af8ee4cfcc574da1c5756fbef96e2bc39922c357b0", size = 39096350 },
+    { url = "https://files.pythonhosted.org/packages/58/70/737cbc335f0a5ef29ca1aea9e3a036f16485046b9cdf40c3348348fc18f4/biotite-1.2.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:5cf67ade2cc970392298cb74550f4e4b8837b9773bcc2d9f726586fc519b8e93", size = 39404027 },
+    { url = "https://files.pythonhosted.org/packages/a3/1c/29b714c16f3ef137f446ef4c77ed38412351417d7462120691850a7fe219/biotite-1.2.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:67813485eb13f3f0c89ecf024f0abb997c03502d6aa36fc7556b662d3e308f93", size = 39167281 },
+    { url = "https://files.pythonhosted.org/packages/ae/30/f63595f7d0209ee7ed06443265230b083f4a551314ffb3e059d02278be5e/biotite-1.2.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9aa5853323c74956b82fcf296bc1707459095ecf1f99e44baf9790c22554daa1", size = 55387976 },
+    { url = "https://files.pythonhosted.org/packages/05/53/239de7fe0e0aef859628d50e6fd736417a4276a1a47131511f95f824fbde/biotite-1.2.0-cp313-cp313-win_amd64.whl", hash = "sha256:7f23caab8e01ccd4a15976db2e64ccb4855bdf5a4270626bac15ec5716d57d78", size = 39074544 },
+]
+
+[[package]]
+name = "biotraj"
+version = "1.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/07/21/2287edfd0d2569639eea706e25c39e63b46a384cf1712db8ea05768317b0/biotraj-1.2.2.tar.gz", hash = "sha256:4bcba92101ed50f369cc1487fb5dfcfe1d8402ad47adaa9232b080553271663a", size = 3909030 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/dd/4e257a394e4a686a5973d6238bc5fb6fa321423c9401e278a34c51a01425/biotraj-1.2.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:8dc790c95f90760d08986c896783f3531cfd5feb3bd8496f07949ccccd8eafb3", size = 863170 },
+    { url = "https://files.pythonhosted.org/packages/a0/3e/90d2c50912df949c5731c564f5c7bf853378d7f2d31f276dd31eb42fb663/biotraj-1.2.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:39d1ce8d7c7e55c87bf35248c20f4d7ed09349b99ee090e61068c9c08d32b179", size = 835504 },
+    { url = "https://files.pythonhosted.org/packages/b5/86/d24589c5f8f6ef4685e6a8c8a670a9be17657677f793b48e19520ed08209/biotraj-1.2.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0accd626b3cb6b29fb4491d593c41daa694edddde8e8dc113228b1969a30c9f6", size = 2246778 },
+    { url = "https://files.pythonhosted.org/packages/3a/78/3cd3ca90490ff5730fffed57464c104a146a0c35280fc4bea2bfafb72b48/biotraj-1.2.2-cp311-cp311-win_amd64.whl", hash = "sha256:8fb09bf6f7cd44c9356880166e45fe1606b05113b4642b99f8b85c25f51699ba", size = 366212 },
+    { url = "https://files.pythonhosted.org/packages/e2/da/bf56c6cc27212ed2b5ad3beb1c399b74ac147236b22900a9434760ebfa27/biotraj-1.2.2-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:b584c2da6d353c09f839e9b72fa243b6f45050b311cdcd5a0f3a44ced80d714e", size = 859982 },
+    { url = "https://files.pythonhosted.org/packages/c4/d2/369ed44ad23f8c0464f7b80d41143d717896097b39fe3dd3e07e6d162fef/biotraj-1.2.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:7bab65f5e3975a844c1018ea5873acd7dd21a64e8ebf0c145635c1d2fb9ef9bd", size = 833765 },
+    { url = "https://files.pythonhosted.org/packages/80/cd/c607b6337ddcf55cc0249527819b727ef28481d7c56ace54cca69400c2b9/biotraj-1.2.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b449930fa70666db0f2e7b1e5f5dad65917086adc66a70f26db38d79b0171815", size = 2239973 },
+    { url = "https://files.pythonhosted.org/packages/13/56/bed88eb34acb31855e7c82a1d68e58775c037ec66ccb2bb02ff310615240/biotraj-1.2.2-cp312-cp312-win_amd64.whl", hash = "sha256:3427567cc0bd0e981bf7de1a6b65baf82984171852994d304b2f316a8926db83", size = 358790 },
+    { url = "https://files.pythonhosted.org/packages/1f/12/8f6a2b21a8b43a2bf85352c993afecb21d40eb3d7373b6242163a93f57e0/biotraj-1.2.2-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:31ed2a9e8a6436f5432f22883e68a36c223b98de0ab80225efbaf67da339a2b2", size = 856347 },
+    { url = "https://files.pythonhosted.org/packages/f6/4d/b1e792c01e61bbfe03b290a0805f0c7bc3949bf9cd4031bcdd183d2f2524/biotraj-1.2.2-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:6a8c84ac95bf65b73928774ec46b72d62b0f30fa12eb8c56c78ed25235f0acf8", size = 832499 },
+    { url = "https://files.pythonhosted.org/packages/f0/6f/ab71525583a7824c70f71de387a1c5ceb27ddcb3fda2dacb734e5b875f14/biotraj-1.2.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2dcfa4a4c755ddc206f81999fd47664747cd2e546e16a51d885332cd4c955f41", size = 2246545 },
+    { url = "https://files.pythonhosted.org/packages/e0/9a/46d2d67b5b672d5d2ffbfb3551fc4b499b45d5edce2558e259f69b72a0d9/biotraj-1.2.2-cp313-cp313-win_amd64.whl", hash = "sha256:e0ed1b586e23ad53e53fb42be8541fb964ec6c4183e6d500fef0bcc1bdcd7487", size = 359596 },
 ]
 
 [[package]]
@@ -1898,6 +1949,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "bio" },
+    { name = "biotite" },
     { name = "cpdb-protein" },
     { name = "cython" },
     { name = "db-dtypes" },
@@ -1919,9 +1971,12 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "bio", specifier = ">=1.7.1" },
+    { name = "biotite", specifier = ">=1.2.0" },
     { name = "cpdb-protein", specifier = ">=0.2.0" },
     { name = "cython", specifier = ">=3.0.12" },
     { name = "db-dtypes", specifier = ">=1.4.2" },
+    { name = "deepchem", specifier = ">=2.8.0" },
+    { name = "dotenv", specifier = ">=0.9.9" },
     { name = "google-cloud-bigquery", specifier = ">=3.29.0" },
     { name = "google-genai", specifier = ">=1.2.0" },
     { name = "graphein", specifier = ">=1.7.7" },

@@ -15,6 +15,11 @@ service-cred.json
 .envrc
 
 myenv/
+protein_graphs
 
 #models
-*.pth
+# *.pth
+# *.keras
+# *.pkl
+
+*.pdb
