@@ -27,12 +27,8 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 project = os.getenv("PROJECT_ID")
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'service-cred.json'
-creds = service_account.Credentials.from_service_account_file("service-cred.json")
-
-print("Api key", api_key)
-print('project', project)
-print('creds', creds)
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'service-cred.json'
+# creds = service_account.Credentials.from_service_account_file("service-cred.json")
 
 ai_client = genai.Client(api_key=api_key)
 
