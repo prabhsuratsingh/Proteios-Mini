@@ -4,10 +4,10 @@ import numpy as np
 import requests
 import os
 from rdkit import Chem
-from rdkit.Chem import Descriptors
+from rdkit.Chem import Draw, Descriptors
 from google import genai 
-from rdkit.Chem import rdMolDraw2D
 from rdkit.Chem import AllChem
+# from rdkit.Chem.Draw import rdMolDraw2D
 from rdkit.Chem import Descriptors, Lipinski
 
 
@@ -322,7 +322,7 @@ def showmol(structure_data, height=500, width=500):
 
 def mol_to_svg(mol, legend=""):
     AllChem.Compute2DCoords(mol)
-    drawer = rdMolDraw2D.MolDraw2DSVG(300, 300)
+    drawer = Draw.rdMolDraw2D.MolDraw2DSVG(300, 300)
     drawer.DrawMolecule(mol, legend=legend)
     drawer.FinishDrawing()
     return drawer.GetDrawingText()
