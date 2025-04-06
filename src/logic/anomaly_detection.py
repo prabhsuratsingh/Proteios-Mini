@@ -63,7 +63,7 @@ class ProteinAnomalyDetectorPDB:
             return None
             
         # Calculate amino acid composition
-        aa_composition = analysis.get_amino_acids_percent()
+        aa_composition = analysis.amino_acids_percent
         
         # Calculate basic properties
         features = {
@@ -263,25 +263,38 @@ class ProteinAnomalyDetectorPDB:
             scaler = StandardScaler()
             X = scaler.fit_transform(df[num_cols])
             
-            # Apply Isolation Forest
-            clf = IsolationForest(contamination=0.1, random_state=42)
+            # Apply Isolation Forest    
+            clf = IsolationForest(contamination=0.01, random_state=42)
             clf.fit(X)
             
             # Transform target features
-            target_vector = scaler.transform(np.array([list(target_features[col] for col in num_cols)]))
+            # target_vector = scaler.transform(np.array([list(target_features[col] for col in num_cols)]))
+            target_vector = pd.DataFrame([target_features], columns=num_cols)
+            target_vector = scaler.transform(target_vector)
             
-            # Get anomaly score
-            anomaly_score = clf.score_samples(target_vector)[0]
+            train_scores = clf.decision_function(X)
+            threshold = np.percentile(train_scores, 5)
+            # anomaly_score = clf.score_samples(target_vector)[0]
+            decision_score = clf.decision_function(target_vector)[0]
             is_anomaly = clf.predict(target_vector)[0] == -1
-            
+
+            print("Min score:", np.min(train_scores))
+            print("Max score:", np.max(train_scores))
+            print("10th percentile (threshold):", threshold)
+            print("25th percentile:", np.percentile(train_scores, 25))
+            print("50th percentile (median):", np.percentile(train_scores, 50))
+            print("75th percentile:", np.percentile(train_scores, 75))
+            print("Is anomaly : ", is_anomaly)
+            # print(f"Anomaly Score: {anomaly_score}")  
+            print(f"Decision Function Score: {decision_score}")
+
             return {
-                'anomaly_score': anomaly_score,
+                'anomaly_score': decision_score,
                 'is_anomaly': is_anomaly,
-                'threshold': clf.threshold_,
+                'threshold': threshold,
                 'severity': 'high' if is_anomaly else 'none'
             }
         else:
-            # Not enough data for ML, use simple PCA
             return {
                 'message': 'Not enough reference sequences for ML detection',
                 'anomaly_score': None
