@@ -1,6 +1,5 @@
 import os
 import streamlit as st
-from rdkit import Chem
 
 from logic.protein_analysis_logic import analyze_protein_with_gemini, display_protein_structure, generate_protein_structure, generate_visual_graphein, query_proteins, validate_pdb
 
@@ -147,12 +146,6 @@ if st.session_state['results'] is not None:
                     if st.session_state.get('pdb_data'):
                         prot_data = st.session_state['pdb_data']
                        
-                        # with open(PDB_FILE, 'w') as temp_file:
-                        #     temp_file.write(prot_data)
-                        # validate_pdb()
-                        # g = generate_visual_graphein(PDB_FILE)
-                        # fig = plotly_protein_structure_graph(g, node_size_multiplier=1)
-                        # st.plotly_chart(fig)
                         structure_html = display_protein_structure(st.session_state['pdb_data'])
                         st.components.v1.html(structure_html._make_html(), height=500)
                         

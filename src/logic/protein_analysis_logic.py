@@ -18,17 +18,12 @@ from graphein.protein.edges.distance import (
     add_hydrophobic_interactions,
     add_peptide_bonds,
 )
-from graphein.protein.visualisation import plotly_protein_structure_graph
-from graphein.protein.analysis import plot_edge_type_distribution
-from graphein.protein.analysis import plot_degree_by_residue_type
 from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 project = os.getenv("PROJECT_ID")
 
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'service-cred.json'
-# creds = service_account.Credentials.from_service_account_file("service-cred.json")
 
 ai_client = genai.Client(api_key=api_key)
 
@@ -127,19 +122,6 @@ def fetch_proteins_from_organism(organism_id, max_results=10):
 def fetch_proteins_from_uniprot_organism(organism_id, query, max_results=10):
     try:
         encoded_query = quote(query)
-        # organism_id = str(organism_id)
-        # search_query = f"(organism_id:{organism_id}) AND ({query})"
-        # params = {
-        #     "query": search_query,
-        #     "size": max_results,
-        #     "format": "json"
-        # }
-        # headers = {
-        #     "accept": "application/json"
-        # }
-        # base_url = "https://rest.uniprot.org/uniprotkb/search"
-
-        # response = requests.get(base_url, headers=headers, params=params)
 
         url = f"https://rest.uniprot.org/uniprotkb/search?query=organism_id:{organism_id}%20{encoded_query}&format=json&size={max_results}"
         print(url)
@@ -305,9 +287,6 @@ def generate_protein_structure(sequence, protein_id):
     af_url = f"https://alphafold.ebi.ac.uk/files/AF-{protein_id}-F1-model_v4.pdb"
     response = requests.get(af_url)
     if response.status_code == 200:
-        # with open(f"{uniprot_id}.pdb", "wb") as f:
-        #     f.write(response.content)
-        # print(f"AlphaFold PDB saved as {uniprot_id}.pdb")
         pdb_data = response.text
         return pdb_data
     else:
@@ -323,8 +302,6 @@ def generate_visual_graphein(pdb_file):
          add_disulfide_interactions,
          add_peptide_bonds,
      ],
-     #graph_metadata_functions=[asa, rsa],  # Add ASA and RSA features.
-     #dssp_config=DSSPConfig(),             # Add DSSP config in order to compute ASA and RSA.
     )  
     print("after file")
     g = construct_graph(path="protein_graphs\protein.pdb", config=config)

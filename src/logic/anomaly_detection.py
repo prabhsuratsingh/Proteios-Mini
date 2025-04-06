@@ -55,17 +55,13 @@ class ProteinAnomalyDetectorPDB:
         if not cleaned_seq:
             return None
             
-        # Create ProtParam object
         try:
             analysis = ProteinAnalysis(cleaned_seq)
         except:
-            # Handle sequences with non-standard amino acids
             return None
             
-        # Calculate amino acid composition
         aa_composition = analysis.amino_acids_percent
         
-        # Calculate basic properties
         features = {
             'length': len(cleaned_seq),
             'molecular_weight': analysis.molecular_weight(),
@@ -75,12 +71,10 @@ class ProteinAnomalyDetectorPDB:
             'gravy': analysis.gravy(),
         }
         
-        # Calculate amino acid frequencies
         aa_counts = {}
         for aa in self.aa_properties.keys():
             aa_counts[f'freq_{aa}'] = cleaned_seq.count(aa) / len(cleaned_seq) if len(cleaned_seq) > 0 else 0
             
-        # Calculate dipeptide frequencies (for select dipeptides known to be important)
         important_dipeptides = ['GG', 'PP', 'CC', 'SS', 'LL', 'AA']
         for dipeptide in important_dipeptides:
             count = 0
@@ -118,11 +112,9 @@ class ProteinAnomalyDetectorPDB:
         residues = list(pdb_structure.get_residues())
         features['residue_count'] = len(residues)
         
-        # Calculate CA distances (as a proxy for protein compactness)
         ca_atoms = [atom for atom in atoms if atom.get_name() == 'CA']
         if len(ca_atoms) > 1:
             ca_coords = np.array([atom.get_coord() for atom in ca_atoms])
-            # Calculate pairwise distances
             distances = []
             for i in range(len(ca_coords)):
                 for j in range(i+1, len(ca_coords)):
@@ -232,18 +224,15 @@ class ProteinAnomalyDetectorPDB:
 
     def run_ml_anomaly_detection(self, sequence, reference_sequences):
         """Use machine learning to detect anomalies"""
-        # Collect features for all sequences
         all_features = []
         all_ids = []
         
-        # Process reference sequences
         for ref_id, ref_seq in reference_sequences.items():
             features = self.calculate_sequence_features(ref_seq)
             if features:
                 all_features.append(features)
                 all_ids.append(ref_id)
         
-        # Process target sequence
         target_features = self.calculate_sequence_features(sequence)
         if not target_features:
             return {
@@ -267,14 +256,11 @@ class ProteinAnomalyDetectorPDB:
             clf = IsolationForest(contamination=0.01, random_state=42)
             clf.fit(X)
             
-            # Transform target features
-            # target_vector = scaler.transform(np.array([list(target_features[col] for col in num_cols)]))
             target_vector = pd.DataFrame([target_features], columns=num_cols)
             target_vector = scaler.transform(target_vector)
             
             train_scores = clf.decision_function(X)
             threshold = np.percentile(train_scores, 5)
-            # anomaly_score = clf.score_samples(target_vector)[0]
             decision_score = clf.decision_function(target_vector)[0]
             is_anomaly = clf.predict(target_vector)[0] == -1
 
@@ -330,27 +316,22 @@ class ProteinAnomalyDetectorPDB:
             fig = px.bar(df, x='amino_acid', y=['observed', 'expected'], 
                          barmode='group', title='Anomalous Amino Acid Frequencies')
             
-            # Add a line for z-scores
             fig_z = px.line(df, x='amino_acid', y='z_score', title='Z-Scores')
             
-            # Combine the two plots
             for trace in fig_z.data:
                 fig.add_trace(trace)
                 
             return fig
         
-        # Create a figure to show hydrophobicity profile
         hydrophobicity_profile = []
         for i in range(len(sequence)):
             aa = sequence[i]
             hydrophobicity = self.aa_properties.get(aa, {'hydrophobicity': 0})['hydrophobicity']
             hydrophobicity_profile.append(hydrophobicity)
         
-        # Create a line plot
         fig = px.line(x=list(range(1, len(sequence) + 1)), y=hydrophobicity_profile,
                       title='Hydrophobicity Profile', labels={'x': 'Position', 'y': 'Hydrophobicity'})
         
-        # Add markers for hydrophobic region anomalies
         hydrophobic_anomalies = [a for a in anomalies if a['type'] == 'hydrophobic_region']
         for anomaly in hydrophobic_anomalies:
             pos = anomaly['position'].split('-')
@@ -366,7 +347,6 @@ def fetch_uniprot_data(accession):
     url = f"https://rest.uniprot.org/uniprotkb/{accession}.fasta"
     response = requests.get(url)
     if response.status_code == 200:
-        # Parse the FASTA content
         fasta_io = io.StringIO(response.text)
         records = list(SeqIO.parse(fasta_io, "fasta"))
         if records:
@@ -377,7 +357,6 @@ def fetch_reference_proteins(keyword, limit=20):
     url = f"https://rest.uniprot.org/uniprotkb/search?query={keyword}&format=fasta&size={limit}"
     response = requests.get(url)
     if response.status_code == 200:
-        # Parse the FASTA content
         fasta_io = io.StringIO(response.text)
         records = list(SeqIO.parse(fasta_io, "fasta"))
         

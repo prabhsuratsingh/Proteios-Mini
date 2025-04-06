@@ -112,7 +112,6 @@ with tab2:
                             st.markdown(f"**Organism:** {organism}")
                             st.markdown(f"**UniProt ID:** {selected_protein}")
                             
-                            # Display druggability score with a gauge
                             st.subheader("Druggability Assessment")
                             st.markdown(f"**Druggability Score:** {druggability_score:.1f}/10")
                             
@@ -159,7 +158,6 @@ with tab3:
     st.write("Screen compound libraries against selected protein target")
     
     if "current_protein" in st.session_state:
-        # Get compound libraries
         libraries = get_real_compound_libraries()
         
         col1, col2 = st.columns([1, 2])
@@ -206,22 +204,11 @@ with tab3:
                 top_compounds = results_df.head(3)["SMILES"].tolist()
                 
                 mols = [Chem.MolFromSmiles(smiles) for smiles in top_compounds]
-                # img = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(200, 200), legends=[f"Score: {results_df.iloc[i]['Binding Affinity']:.2f}" for i in range(3)])
                 
                 st.subheader("Top 3 Compounds (SVG Rendering)")
                 for i, mol in enumerate(mols):
                     svg = mol_to_svg(mol, legend=f"Score: {results_df.iloc[i]['Binding Affinity']:.2f}")
-                    st.image(svg, use_column_width=False)
-                                
-                # Display top compounds
-                # st.subheader("Top Compounds")
-                # # Convert the image to bytes
-                # buf = BytesIO()
-                # img.save(buf, format='PNG')
-                # buf.seek(0)
-                
-                # # Display the image
-                # st.image(buf, caption="Top 3 compounds")
+                    st.image(svg, use_container_width=False)
     else:
         st.info("Please select and analyze a protein target first")
 
@@ -230,7 +217,6 @@ with tab4:
     st.write("Generate novel compounds for the selected target")
     
     if "current_protein" in st.session_state:
-        # Get protein information
         protein_id = st.session_state.current_protein["id"]
         protein_info = st.session_state.current_protein["info"]
         protein_name = protein_info.get("proteinDescription", {}).get("recommendedName", {}).get("fullName", {}).get("value", "N/A")
@@ -240,49 +226,31 @@ with tab4:
         col1, col2 = st.columns([1, 2])
         
         with col1:
-            # Design parameters
             num_compounds = st.slider("Number of compounds to generate", 1, 10, 5)
             
             if st.button("Generate Novel Compounds"):
                 with st.spinner("Generating compounds..."):
-                    # Add a simulated delay to mimic complex computation
                     time.sleep(2)
                     
-                    # Generate compounds
                     compounds = generate_novel_compounds(protein_id, num_compounds)
                     
-                    # Save to session state
                     st.session_state.generated_compounds = compounds
                     
-                    # Display success message
                     st.success(f"Generated {len(compounds)} novel compounds!")
         
         with col2:
             if "generated_compounds" in st.session_state:
                 st.subheader("Generated Compounds")
                 
-                # Convert SMILES to molecules
                 mols = [Chem.MolFromSmiles(smiles) for smiles in st.session_state.generated_compounds]
 
-                # Display molecules in a grid
-                # img = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(200, 200), legends=[f"Compound {i+1}" for i in range(len(mols))])
-                
-                # # Convert the image to bytes
-                # buf = BytesIO()
-                # img.save(buf, format='PNG')
-                # buf.seek(0)
-                
-                # # Display the image
-                # st.image(buf, caption="Generated compounds")
                 st.subheader("Generated Compounds (SVG Rendering)")
                 for i, mol in enumerate(mols):
                     svg = mol_to_svg(mol, legend=f"Compound {i+1}")
-                    st.image(svg, use_column_width=False)
+                    st.image(svg, use_container_width=False)
                 
-                # Analyze compounds
                 st.subheader("Compound Properties")
                 
-                # Calculate properties
                 properties = []
                 for i, mol in enumerate(mols):
                     props = {
@@ -304,23 +272,17 @@ with tab4:
                 props_df = pd.DataFrame(properties)
                 st.dataframe(props_df)
                 
-                # Offer to dock the compounds
                 if st.button("Dock Generated Compounds"):
                     with st.spinner("Docking compounds..."):
-                        # Run virtual screening on generated compounds
                         screening_results = screen_compounds(st.session_state.current_protein["structure"], st.session_state.generated_compounds)
                         
-                        # Convert results to dataframe
                         results_df = pd.DataFrame(screening_results)
                         
-                        # Sort by binding affinity
                         results_df = results_df.sort_values("Binding Affinity")
                         
-                        # Display results
                         st.subheader("Docking Results")
                         st.dataframe(results_df)
                         
-                        # Plot binding affinities
                         st.subheader("Binding Affinity Comparison")
                         fig, ax = plt.subplots(figsize=(10, 6))
                         sns.barplot(x="SMILES", y="Binding Affinity", data=results_df, ax=ax)

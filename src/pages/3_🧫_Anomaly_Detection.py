@@ -18,7 +18,6 @@ if 'target_seq' not in st.session_state:
 if 'ref_seq' not in st.session_state:
     st.session_state['ref_seq'] = None
 
-# Create tabs
 tab1, tab2, tab3 = st.tabs(["Sequence Analysis", "Structure Analysis", "ML Anomaly Detection"])
 
 with tab1:
@@ -70,14 +69,11 @@ with tab2:
     uploaded_file = st.file_uploader("Choose a PDB file", type="pdb")
     
     if uploaded_file is not None:
-        # Read the PDB file
         pdb_content = uploaded_file.read()
         
-        # Create a temporary file for PDB parser
         with open("temp.pdb", "wb") as f:
             f.write(pdb_content)
         
-        # Parse the PDB file
         detector = ProteinAnomalyDetectorPDB()
         parser = PDBParser(QUIET=True)
         structure = parser.get_structure("protein", "temp.pdb")
@@ -127,7 +123,6 @@ with tab2:
                     
                     st.subheader("Structural Metrics")
                     
-                    # Create bar chart of key structural features
                     structural_metrics = {
                         'Atom Count': structure_features.get('atom_count', 0),
                         'Residue Count': structure_features.get('residue_count', 0),
@@ -193,13 +188,10 @@ with tab3:
                     st.error("Failed to retrieve reference proteins")
     else:
         st.info("Using built-in reference set")
-        # This would be replaced with actual built-in references
         reference_sequences = {"Built-in": "PLACEHOLDER"}
     
-    # Run ML anomaly detection
     print("TS", st.session_state['target_seq'])
     print("RS ", st.session_state['ref_seq'])
-    # if target_sequence and reference_sequences:
     detector = ProteinAnomalyDetectorPDB()
     
     if st.button("Run ML Anomaly Detection"):
@@ -211,7 +203,6 @@ with tab3:
             elif 'message' in results:
                 st.warning(results['message'])
             else:
-                # Display results
                 st.subheader("ML Anomaly Detection Results")
                 
                 col1, col2 = st.columns(2)
@@ -225,7 +216,6 @@ with tab3:
                 else:
                     st.success("This protein is within normal parameters")
                 
-                # Create a gauge chart
                 fig = go.Figure(go.Indicator(
                     mode = "gauge+number",
                     value = results['anomaly_score'],
