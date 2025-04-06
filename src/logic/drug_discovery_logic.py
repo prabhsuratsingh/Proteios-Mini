@@ -6,8 +6,9 @@ import os
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 from google import genai 
-from google.oauth2 import service_account
-from sympy import false
+from rdkit.Chem import rdMolDraw2D
+from rdkit.Chem import AllChem
+from rdkit.Chem import Descriptors, Lipinski
 
 
 api_key = os.getenv("GEMINI_API_KEY")
@@ -318,3 +319,10 @@ def showmol(structure_data, height=500, width=500):
     structure_viewer.spin(True)
     html = structure_viewer._make_html()
     return html
+
+def mol_to_svg(mol, legend=""):
+    AllChem.Compute2DCoords(mol)
+    drawer = rdMolDraw2D.MolDraw2DSVG(300, 300)
+    drawer.DrawMolecule(mol, legend=legend)
+    drawer.FinishDrawing()
+    return drawer.GetDrawingText()

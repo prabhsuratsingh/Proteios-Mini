@@ -4,10 +4,11 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import seaborn as sns
 from rdkit import Chem
-from rdkit.Chem import Draw, Descriptors, Lipinski
+from rdkit.Chem import Descriptors, Lipinski
+
 import time
 
-from logic.drug_discovery_logic import analyze_protein_disease_associations, calculate_druggability, generate_novel_compounds, get_alphafold_structure, get_compound_libraries, get_protein_info, get_real_compound_libraries, query_uniprot, screen_compounds, showmol
+from logic.drug_discovery_logic import analyze_protein_disease_associations, calculate_druggability, generate_novel_compounds, get_alphafold_structure, get_compound_libraries, get_protein_info, get_real_compound_libraries, mol_to_svg, query_uniprot, screen_compounds, showmol
 
 
 st.set_page_config(
@@ -201,21 +202,26 @@ with tab3:
                 ax.set_xlabel("Binding Affinity (kcal/mol)")
                 ax.set_ylabel("Frequency")
                 st.pyplot(fig)
-                
-                # Display top compounds
-                st.subheader("Top Compounds")
+
                 top_compounds = results_df.head(3)["SMILES"].tolist()
                 
                 mols = [Chem.MolFromSmiles(smiles) for smiles in top_compounds]
-                img = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(200, 200), legends=[f"Score: {results_df.iloc[i]['Binding Affinity']:.2f}" for i in range(3)])
+                # img = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(200, 200), legends=[f"Score: {results_df.iloc[i]['Binding Affinity']:.2f}" for i in range(3)])
                 
-                # Convert the image to bytes
-                buf = BytesIO()
-                img.save(buf, format='PNG')
-                buf.seek(0)
+                st.subheader("Top 3 Compounds (SVG Rendering)")
+                for i, mol in enumerate(mols):
+                    svg = mol_to_svg(mol, legend=f"Score: {results_df.iloc[i]['Binding Affinity']:.2f}")
+                    st.image(svg, use_column_width=False)
+                                
+                # Display top compounds
+                # st.subheader("Top Compounds")
+                # # Convert the image to bytes
+                # buf = BytesIO()
+                # img.save(buf, format='PNG')
+                # buf.seek(0)
                 
-                # Display the image
-                st.image(buf, caption="Top 3 compounds")
+                # # Display the image
+                # st.image(buf, caption="Top 3 compounds")
     else:
         st.info("Please select and analyze a protein target first")
 
@@ -259,15 +265,19 @@ with tab4:
                 mols = [Chem.MolFromSmiles(smiles) for smiles in st.session_state.generated_compounds]
 
                 # Display molecules in a grid
-                img = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(200, 200), legends=[f"Compound {i+1}" for i in range(len(mols))])
+                # img = Draw.MolsToGridImage(mols, molsPerRow=3, subImgSize=(200, 200), legends=[f"Compound {i+1}" for i in range(len(mols))])
                 
-                # Convert the image to bytes
-                buf = BytesIO()
-                img.save(buf, format='PNG')
-                buf.seek(0)
+                # # Convert the image to bytes
+                # buf = BytesIO()
+                # img.save(buf, format='PNG')
+                # buf.seek(0)
                 
-                # Display the image
-                st.image(buf, caption="Generated compounds")
+                # # Display the image
+                # st.image(buf, caption="Generated compounds")
+                st.subheader("Generated Compounds (SVG Rendering)")
+                for i, mol in enumerate(mols):
+                    svg = mol_to_svg(mol, legend=f"Compound {i+1}")
+                    st.image(svg, use_column_width=False)
                 
                 # Analyze compounds
                 st.subheader("Compound Properties")
