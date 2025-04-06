@@ -10,6 +10,8 @@ Proteios is an innovative platform designed to simplify and enhance protein rese
 
 
 🧬Protein Anomaly Detection - Proteios features a powerful anomaly detection module that distinguishes structurally or functionally abnormal proteins from their normal counterparts. This is achieved through a custom-trained Variational Autoencoder (VAE) model, which learns a compressed representation (latent space) of normal protein structures.
+
+
 By combining AI-powered insights, molecular visualization, and machine learning, Proteios makes protein research more accessible, efficient, and insightful.
 
 deployed app - https://proteios.streamlit.app/
