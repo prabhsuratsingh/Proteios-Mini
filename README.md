@@ -14,7 +14,7 @@ Proteios is an innovative platform designed to simplify and enhance protein rese
 
 By combining AI-powered insights, molecular visualization, and machine learning, Proteios makes protein research more accessible, efficient, and insightful.
 
-deployed app - https://proteios.streamlit.app/
+deployed app (give it a few mins)- https://proteios.streamlit.app/
 
 ## Presentation for Proteios MVP
 
