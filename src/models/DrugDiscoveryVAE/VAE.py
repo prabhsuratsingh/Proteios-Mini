@@ -4,22 +4,30 @@ import torch.nn as nn
 class MolecularVAE(nn.Module):
     def __init__(self, input_dim=2048, latent_dim=128):
         super(MolecularVAE, self).__init__()
-        
-        #encoder
+
+        # Encoder
         self.fc1 = nn.Linear(input_dim, 1024)
         self.fc2 = nn.Linear(1024, 512)
         self.fc_mu = nn.Linear(512, latent_dim)
         self.fc_logvar = nn.Linear(512, latent_dim)
-        
-        #decoder
+
+        # Decoder
         self.fc3 = nn.Linear(latent_dim, 512)
         self.fc4 = nn.Linear(512, 1024)
         self.fc5 = nn.Linear(1024, input_dim)
 
+        # Activity predictor head (pIC50)
+        self.predictor = nn.Sequential(
+            nn.Linear(latent_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1)  # Output: predicted pIC50
+        )
+
     def encode(self, x):
         h = torch.relu(self.fc1(x))
         h = torch.relu(self.fc2(h))
-        mu, logvar = self.fc_mu(h), self.fc_logvar(h)
+        mu = self.fc_mu(h)
+        logvar = self.fc_logvar(h)
         return mu, logvar
 
     def reparameterize(self, mu, logvar):
@@ -30,10 +38,11 @@ class MolecularVAE(nn.Module):
     def decode(self, z):
         h = torch.relu(self.fc3(z))
         h = torch.relu(self.fc4(h))
-        #return mol fp
-        return torch.sigmoid(self.fc5(h))  
+        return torch.sigmoid(self.fc5(h))  # fingerprint reconstruction
 
     def forward(self, x):
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        return self.decode(z), mu, logvar
+        recon_x = self.decode(z)
+        pred_activity = self.predictor(z)
+        return recon_x, mu, logvar, pred_activity
