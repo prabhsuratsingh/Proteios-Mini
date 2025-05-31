@@ -273,7 +273,7 @@ def get_compound_libraries():
         ]
     }
 
-def analyze_protein_disease_associations(protein_info):
+def analyze_protein_disease_associations(protein_info, model_name='gemini-2.0-flash'):
     protein_name = protein_info.get("proteinDescription", {}).get("recommendedName", {}).get("fullName", {}).get("value", "")
     gene_name = protein_info.get("genes", [{}])[0].get("geneName", {}).get("value", "")
     
@@ -300,7 +300,12 @@ def analyze_protein_disease_associations(protein_info):
     """
     
     try:
-        response = ai_client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+        # models = ai_client.models.list(config={'page_size': 5})
+
+        # print("Available Models:")
+        # for model in models:
+        #     print(f"- {model.name}")
+        response = ai_client.models.generate_content(model=model_name, contents=prompt)
         return response.text
     except Exception as e:
         return f"Error in Gemini analysis: {str(e)}"

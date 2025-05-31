@@ -80,6 +80,9 @@ with tab2:
     st.write("Analyze potential drug targets in detail")
     
     if "proteins_df" in st.session_state and "uniprot_results" in st.session_state:
+        model_options = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-preview-04-17"]
+        selected_model = st.selectbox("Select a Google AI model for disease analysis", model_options)
+
         protein_options = st.session_state.proteins_df["UniProt ID"].tolist()
         selected_protein = st.selectbox("Select a protein to analyze", protein_options)
         
@@ -143,7 +146,7 @@ with tab2:
                         
                         st.subheader("Disease Associations & Drug Target Analysis")
                         
-                        analysis = analyze_protein_disease_associations(protein_info)
+                        analysis = analyze_protein_disease_associations(protein_info, model_name=selected_model)
                         st.markdown(analysis)
                         
                     else:
