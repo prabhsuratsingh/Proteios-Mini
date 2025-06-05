@@ -1,14 +1,15 @@
 import streamlit as st
 import pandas as pd
-from io import BytesIO
 import matplotlib.pyplot as plt
 import seaborn as sns
 from rdkit import Chem
 from rdkit.Chem import Descriptors, Lipinski
+from rdkit.Chem import Draw, Descriptors
 
 import time
 
-from logic.drug_discovery_logic import analyze_protein_disease_associations, calculate_druggability, generate_novel_compounds, get_alphafold_structure, get_compound_libraries, get_protein_info, get_real_compound_libraries, mol_to_svg, query_uniprot, screen_compounds, showmol
+from logic.drug_discovery_logic import analyze_molecule, analyze_protein_disease_associations, calculate_druggability, fingerprint_to_smiles, generate_novel_compounds, get_alphafold_structure, get_compound_libraries, get_protein_info, get_real_compound_libraries, mol_to_svg, query_uniprot, screen_compounds, showmol
+from models.DrugDiscoveryVAE.utils import create_fp, impl_pca, prep_data
 
 
 st.set_page_config(
@@ -35,7 +36,7 @@ with st.sidebar:
     - Proteins that cause Alzheimer's 
     """)
 
-tab1, tab2, tab3, tab4 = st.tabs(["Target Identification", "Target Analysis", "Virtual Screening", "De Novo Design"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Target Identification", "Target Analysis", "Virtual Screening", "De Novo Design", "Latent Space Exploration"])
 
 with tab1:
     st.header("Target Identification")
@@ -80,6 +81,9 @@ with tab2:
     st.write("Analyze potential drug targets in detail")
     
     if "proteins_df" in st.session_state and "uniprot_results" in st.session_state:
+        model_options = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-preview-04-17"]
+        selected_model = st.selectbox("Select a Google AI model for disease analysis", model_options)
+
         protein_options = st.session_state.proteins_df["UniProt ID"].tolist()
         selected_protein = st.selectbox("Select a protein to analyze", protein_options)
         
@@ -143,7 +147,7 @@ with tab2:
                         
                         st.subheader("Disease Associations & Drug Target Analysis")
                         
-                        analysis = analyze_protein_disease_associations(protein_info)
+                        analysis = analyze_protein_disease_associations(protein_info, model_name=selected_model)
                         st.markdown(analysis)
                         
                     else:
@@ -292,3 +296,39 @@ with tab4:
                         st.pyplot(fig)
     else:
         st.info("Please select and analyze a protein target first")
+
+with tab5:
+    st.header("🧬 Latent Space Explorer for Drug Discovery")
+
+    st.markdown("Visualize and interact with molecules in the latent space of a VAE trained on bioactivity (pIC50).")
+
+    st.subheader("Latent Space Colored by pIC50")
+
+    df, X, y, z, z_np = prep_data()
+    z_pca = impl_pca()
+
+    fig, ax = plt.subplots()
+    scatter = ax.scatter(z_pca[:, 0], z_pca[:, 1], c=y.cpu(), cmap='viridis', s=10)
+    fig.colorbar(scatter, label="pIC50")
+    st.pyplot(fig)
+
+    index = st.slider("Select Molecule Index", 0, len(df) - 1, 0)
+    smiles = df.iloc[index]["smiles"]
+    st.write(f"**Selected SMILES**: {smiles}")
+
+    mol = Chem.MolFromSmiles(smiles)
+    st.image(Draw.MolToImage(mol), caption="Selected Molecule")
+    
+    st.subheader("Molecular Properties")
+    analyze_molecule(smiles)
+
+    st.subheader("Generate New Molecule Around Latent Vector")
+
+    if st.button("Generate"):
+        new_fp = create_fp(index)
+
+        new_smi = fingerprint_to_smiles(new_fp)
+        st.write(f"**Generated SMILES**: {new_smi}")
+        new_mol = Chem.MolFromSmiles(new_smi)
+        st.image(Draw.MolToImage(new_mol), caption="Generated Molecule")
+        analyze_molecule(new_smi)

@@ -4,32 +4,19 @@ import numpy as np
 import requests
 import os
 from rdkit import Chem
+from rdkit import DataStructs
 from rdkit.Chem import Draw, Descriptors
 from google import genai 
 from rdkit.Chem import AllChem
-# from rdkit.Chem.Draw import rdMolDraw2D
-from rdkit.Chem import Descriptors, Lipinski
+from rdkit.Chem import Descriptors
+
+from models.DrugDiscoveryVAE.utils import prep_data
 
 
 api_key = os.getenv("GEMINI_API_KEY")
 project = os.getenv("PROJECT_ID")
 
-
 ai_client = genai.Client(api_key=api_key)
-
-# #loadin model from cloud
-# url = "https://s3.tebi.io/proteios-models/molecular_vae.pth"
-# model_path = "molecular_vae.pth"
-# if not os.path.exists(model_path):
-#     response = requests.get(url)
-#     with open(model_path, "wb") as f:
-#         f.write(response.content)
-
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# vae_model = MolecularVAE()
-# vae_model.load_state_dict(torch.load(model_path, map_location=device))
-# vae_model.to(device)
 
 class MockMolecularDocking:
     def dock(self, receptor_file, ligand_file):
@@ -273,7 +260,7 @@ def get_compound_libraries():
         ]
     }
 
-def analyze_protein_disease_associations(protein_info):
+def analyze_protein_disease_associations(protein_info, model_name='gemini-2.0-flash'):
     protein_name = protein_info.get("proteinDescription", {}).get("recommendedName", {}).get("fullName", {}).get("value", "")
     gene_name = protein_info.get("genes", [{}])[0].get("geneName", {}).get("value", "")
     
@@ -300,7 +287,12 @@ def analyze_protein_disease_associations(protein_info):
     """
     
     try:
-        response = ai_client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+        # models = ai_client.models.list(config={'page_size': 5})
+
+        # print("Available Models:")
+        # for model in models:
+        #     print(f"- {model.name}")
+        response = ai_client.models.generate_content(model=model_name, contents=prompt)
         return response.text
     except Exception as e:
         return f"Error in Gemini analysis: {str(e)}"
@@ -321,3 +313,29 @@ def mol_to_svg(mol, legend=""):
     drawer.DrawMolecule(mol, legend=legend)
     drawer.FinishDrawing()
     return drawer.GetDrawingText()
+
+def analyze_molecule(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol:
+        mw = Descriptors.MolWt(mol)
+        logp = Descriptors.MolLogP(mol)
+        rings = Chem.rdMolDescriptors.CalcNumRings(mol)
+        rot_bonds = Chem.rdMolDescriptors.CalcNumRotatableBonds(mol)
+        st.markdown(f"""
+        - **Molecular Weight**: {mw:.2f}  
+        - **LogP**: {logp:.2f}  
+        - **Rings**: {rings}  
+        - **Rotatable Bonds**: {rot_bonds}
+        """)
+    else:
+        st.error("Invalid SMILES")
+
+def fingerprint_to_smiles(fp_array):
+        df, _, _, _, _ = prep_data()
+        bit_vector = DataStructs.ExplicitBitVect(len(fp_array))
+        for i, bit in enumerate(fp_array):
+            if bit > 0.5:
+                bit_vector.SetBit(i)
+        df['similarity'] = df['fingerprints'].apply(lambda fp: DataStructs.TanimotoSimilarity(fp, bit_vector))
+        best_match = df.loc[df['similarity'].idxmax()]
+        return best_match['smiles']
